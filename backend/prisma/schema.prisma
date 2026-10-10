@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Route {
+  id             Int       @id @default(autoincrement())
+  number         Int       @unique
+  name           String
+  color          String
+  distanceKm     Float
+  durationMin    Int
+  busCount       Int
+  busNote        String?
+  frequencyMin   Int
+  firstTrip      String
+  lastTrip       String
+  active         Boolean   @default(true)
+  departureTimes String[]
+  stops          BusStop[]
+}
+
+model BusStop {
+  id             Int    @id @default(autoincrement())
+  name           String
+  order          Int
+  direction      String @default("OUTBOUND")
+  transferRoutes Int[]
+  routeId        Int
+  route          Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId, direction, order])
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  name     String
+  role     String @default("USER")
+}

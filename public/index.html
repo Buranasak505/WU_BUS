@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>มินิบัสไฟฟ้า ม.วลัยลักษณ์</title>
+<style>
+  * { box-sizing: border-box; font-family: "Sarabun", "Segoe UI", sans-serif; }
+  body { margin: 0; background: #f1f5f9; color: #0f172a; }
+  .hidden { display: none !important; }
+  /* ล็อกอิน */
+  #login { min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #7c3aed, #2563eb); padding: 16px; }
+  .card { background: #fff; padding: 32px; border-radius: 16px; width: 100%; max-width: 360px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+  .card h1 { margin: 0 0 4px; font-size: 22px; }
+  .card p { margin: 0 0 20px; color: #64748b; font-size: 14px; }
+  input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1;
+    border-radius: 8px; font-size: 16px; }
+  button { cursor: pointer; border: 0; border-radius: 8px; font-size: 16px; }
+  .btn { width: 100%; padding: 12px; background: #2563eb; color: #fff; }
+  .btn:hover { background: #1d4ed8; }
+  #err { color: #dc2626; font-size: 14px; min-height: 20px; }
+  /* แอป */
+  header { background: #1e293b; color: #fff; padding: 14px 20px; display: flex;
+    justify-content: space-between; align-items: center; }
+  header button { background: #475569; color: #fff; padding: 8px 14px; }
+  main { max-width: 900px; margin: 0 auto; padding: 20px; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tab { padding: 10px 18px; background: #fff; border: 2px solid transparent; border-radius: 999px; }
+  .tab.active { color: #fff; }
+  .panel { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .panel h2 { margin-top: 0; font-size: 18px; }
+  /* เส้นทาง */
+  .timeline { list-style: none; padding: 0; margin: 0; }
+  .timeline li { position: relative; padding: 0 0 22px 36px; }
+  .timeline li::before { content: ""; position: absolute; left: 9px; top: 20px; bottom: -2px;
+    width: 3px; background: var(--c); }
+  .timeline li:last-child::before { display: none; }
+  .dot { position: absolute; left: 0; top: 2px; width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; border: 4px solid var(--c); }
+  .pickup .dot { background: var(--c); }
+  .badge { display: inline-block; font-size: 12px; background: var(--c); color: #fff;
+    padding: 2px 8px; border-radius: 999px; margin-left: 8px; }
+  .bus { display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid #e2e8f0; gap: 8px; flex-wrap: wrap; }
+  .st { padding: 3px 10px; border-radius: 999px; font-size: 13px; background: #e2e8f0; }
+  .st.run { background: #bbf7d0; color: #166534; }
+  select { padding: 6px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<!-- หน้าล็อกอิน -->
+<div id="login">
+  <form class="card" id="loginForm">
+    <h1>🚌 มินิบัสไฟฟ้า ม.วลัยลักษณ์</h1>
+    <p>เข้าสู่ระบบเพื่อดูเส้นทางและจุดรับส่ง</p>
+    <input id="u" placeholder="ชื่อผู้ใช้" autocomplete="username" required>
+    <input id="p" type="password" placeholder="รหัสผ่าน" autocomplete="current-password" required>
+    <div id="err"></div>
+    <button class="btn" type="submit">เข้าสู่ระบบ</button>
+    <p style="margin-top:14px;font-size:12px">ทดลอง: admin / 1234 หรือ student / 1234</p>
+  </form>
+</div>
+
+<!-- หน้าแอป -->
+<div id="app" class="hidden">
+  <header>
+    <strong>🚌 เส้นทางมินิบัสไฟฟ้า</strong>
+    <span><span id="who"></span> <button id="logout">ออกจากระบบ</button></span>
+  </header>
+  <main>
+    <div class="tabs" id="tabs"></div>
+    <div class="panel" id="routePanel"></div>
+    <div class="panel" id="busPanel"></div>
+  </main>
+</div>
+
+<script>
+let token = localStorage.getItem("token");
+let me = JSON.parse(localStorage.getItem("me") || "null");
+let routes = [], current = 0;
+
+const $ = (id) => document.getElementById(id);
+
+async function api(url, opt = {}) {
+  opt.headers = { "Content-Type": "application/json", Authorization: "Bearer " + token };
+  const r = await fetch(url, opt);
+  if (r.status === 401) { logout(); throw new Error("หมดอายุ"); }
+  return r.json();
+}
+
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const r = await fetch("/api/login", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: $("u").value, password: $("p").value }),
+  });
+  const d = await r.json();
+  if (!r.ok) { $("err").textContent = d.error; return; }
+  token = d.token; me = d;
+  localStorage.setItem("token", token);
+  localStorage.setItem("me", JSON.stringify(me));
+  start();
+});
+
+function logout() {
+  localStorage.clear(); token = null;
+  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+}
+$("logout").onclick = logout;
+
+async function start() {
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  $("who").textContent = "👤 " + me.name + " ";
+  routes = (await api("/api/data")).routes;
+  render();
+}
+
+function render() {
+  $("tabs").innerHTML = routes.map((r, i) =>
+    `<button class="tab ${i === current ? "active" : ""}" style="${i === current ? "background:" + r.color : "border-color:" + r.color}"
+      onclick="current=${i};render()">สาย ${r.id} ${r.name}</button>`).join("");
+
+  const r = routes[current];
+  $("routePanel").style.setProperty("--c", r.color);
+  $("routePanel").innerHTML = `<h2>สาย ${r.id}: ${r.name} ผ่านจุดต่อไปนี้</h2>
+    <ul class="timeline">${r.stopList.map((s) => `
+      <li class="${s.isPickup ? "pickup" : ""}"><span class="dot"></span>${s.name}
+      ${s.isPickup ? '<span class="badge">จุดรับ-ส่ง</span>' : ""}</li>`).join("")}</ul>
+    <small>● จุดทึบ = จุดรับ-ส่งผู้โดยสาร</small>`;
+
+  $("busPanel").innerHTML = `<h2>รถที่วิ่งในสายนี้</h2>` + r.buses.map((b) => `
+    <div class="bus"><span><strong>${b.id}</strong> • ${b.seats} ที่นั่ง</span>
+    <span class="st ${b.status === "กำลังวิ่ง" ? "run" : ""}">${b.status}</span>
+    ${me.role === "admin" ? `<select onchange="setStatus('${b.id}',this.value)">
+      ${["กำลังวิ่ง", "จอดพัก", "ซ่อมบำรุง"].map((s) => `<option ${s === b.status ? "selected" : ""}>${s}</option>`).join("")}
+    </select>` : ""}</div>`).join("");
+}
+
+async function setStatus(id, status) {
+  await api(`/api/bus/${id}/status`, { method: "POST", body: JSON.stringify({ status }) });
+  routes = (await api("/api/data")).routes; render();
+}
+
+if (token && me) start();
+</script>
+</body>
+</html>

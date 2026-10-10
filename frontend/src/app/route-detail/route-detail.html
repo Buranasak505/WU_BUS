@@ -1,0 +1,97 @@
+<div class="max-w-4xl mx-auto w-full mt-6 pb-20">
+  
+  <!-- สถานะกำลังโหลด -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64 text-gray-500 font-semibold">
+    <div class="w-8 h-8 border-4 border-gray-200 border-t-gray-800 rounded-full animate-spin mr-3"></div>
+    กำลังโหลดข้อมูลเส้นทาง...
+  </div>
+
+  <div *ngIf="!isLoading && routeData" class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100">
+    
+    <!-- ส่วนหัว (สีจะเปลี่ยนตามสายรถ) -->
+    <div [ngClass]="{
+      'bg-[#ef4444]': routeData.number === 1,
+      'bg-[#3b82f6]': routeData.number === 2,
+      'bg-[#22c55e]': routeData.number === 3
+    }" class="p-8 md:p-12 text-white relative">
+      <!-- ปุ่มย้อนกลับ -->
+      <a routerLink="/" class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold transition-all mb-8 shadow-sm">
+        &larr; กลับไปหน้าหลัก
+      </a>
+
+      <div class="flex items-center gap-5 relative z-10">
+        <div class="bg-white text-gray-900 font-black w-20 h-20 flex items-center justify-center rounded-3xl text-4xl shadow-lg">
+          {{ routeData.number }}
+        </div>
+        <div>
+          <div class="text-sm font-bold opacity-90 uppercase tracking-widest mb-1">รายละเอียดเส้นทาง</div>
+          <h1 class="font-extrabold text-3xl md:text-5xl">{{ routeData.name }}</h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- ส่วนข้อมูลสรุป -->
+    <div class="px-8 py-6 bg-gray-50 flex flex-wrap gap-6 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-lg">⏱️</div>
+        <div>
+          <div class="text-xs text-gray-500 font-bold">เวลาวิ่งต่อรอบ</div>
+          <div class="font-black text-gray-800">{{ routeData.durationMin }} นาที</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-lg">📏</div>
+        <div>
+          <div class="text-xs text-gray-500 font-bold">ระยะทาง</div>
+          <div class="font-black text-gray-800">{{ routeData.distanceKm }} กม.</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-lg">🚌</div>
+        <div>
+          <div class="text-xs text-gray-500 font-bold">จำนวนรถ</div>
+          <div class="font-black text-gray-800">{{ routeData.busCount }} คัน</div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="live() as l" class="mx-8 mt-6 p-4 rounded-2xl bg-orange-50 border border-orange-200 flex flex-col gap-1">
+  <strong *ngIf="l.status === 'RUNNING'">🚌 ตอนนี้มีรถ {{ l.buses.length }} คันบนเส้นทาง</strong>
+  <strong *ngIf="l.status !== 'RUNNING' && l.nextDeparture">
+    รถออกเที่ยวถัดไป {{ l.nextDeparture.time }} (อีก {{ l.nextDeparture.inMin }} นาที)
+  </strong>
+  <strong *ngIf="l.status !== 'RUNNING' && !l.nextDeparture">หมดเวลาให้บริการวันนี้</strong>
+  <small class="text-orange-800">ประมาณการจากตารางเวลา ไม่ใช่ GPS จริง</small>
+</div>
+
+    <!-- ไทม์ไลน์รายชื่อป้ายหยุดรถ -->
+    <div class="p-8 md:p-12">
+      <h3 class="text-xl font-bold text-gray-800 mb-8 flex items-center gap-2">
+        📍 จุดจอดรับ-ส่งทั้งหมด ({{ routeData.stops?.length || 0 }} ป้าย)
+      </h3>
+
+      <div class="relative border-l-4 border-gray-200 ml-5 space-y-8">
+        <div *ngFor="let stop of routeData.stops; let isLast = last" class="relative">
+          <!-- วงกลมจุดจอด -->
+          <div [ngClass]="{
+            'bg-[#ef4444]': routeData.number === 1,
+            'bg-[#3b82f6]': routeData.number === 2,
+            'bg-[#22c55e]': routeData.number === 3
+          }" class="absolute -left-[14px] top-1 w-6 h-6 rounded-full border-4 border-white shadow-md"></div>
+          
+          <div class="pl-8">
+            <h4 class="text-lg font-bold text-gray-900">{{ stop.name }}</h4>
+            <ng-container *ngIf="getLive(stop.id) as ls">
+  <div *ngIf="ls.busHere" class="text-green-600 font-bold text-sm">🚌 รถน่าจะอยู่ที่ป้ายนี้</div>
+  <div *ngIf="!ls.busHere && ls.nextArrivalMin !== null" class="text-gray-500 text-xs">อีก {{ ls.nextArrivalMin }} นาที</div>
+</ng-container>
+
+            <span class="inline-block mt-1 px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg uppercase tracking-wider">
+              ป้ายที่ {{ stop.order }} • {{ stop.direction === 'INBOUND' ? 'ขาเข้า' : 'ขาออก' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,10 @@
+.times { background: #fff; border-radius: 14px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip { color: #fff; padding: 4px 12px; border-radius: 999px; font-size: 14px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.box { background: #fff; border-radius: 14px; padding: 16px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.box h2 { margin-top: 0; }
+ol { margin: 0; padding-left: 22px; }
+li { padding: 6px 0; border-bottom: 1px solid #eef1f6; }
+li::marker { color: var(--c, #1e63d6); font-weight: 700; }
+@media (max-width: 600px) { .cols { grid-template-columns: 1fr; } }
