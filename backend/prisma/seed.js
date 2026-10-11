@@ -82,7 +82,7 @@ async function main() {
       { username: "user", password: await bcrypt.hash("user1234", 10), name: "ผู้ใช้ทั่วไป", role: "USER" },
     ],
   });
-  console.log("สร้างผู้ใช้เรียบร้อย (admin / admin1234)");
+  console.log("สร้างผู้ใช้เรียบร้อย (admin/admin1234)");
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());
