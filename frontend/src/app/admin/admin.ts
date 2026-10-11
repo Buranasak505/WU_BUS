@@ -39,7 +39,7 @@ export class Admin implements OnInit {
 
   fetchRoutes(): void {
     this.isLoading = true;
-    this.http.get<any[]>('http://localhost:3000/routes').subscribe({
+    this.http.get<any[]>('https://wu-bus-backend.onrender.com/routes').subscribe({
       next: (data) => {
         this.routes = data;
         this.isLoading = false;
@@ -119,7 +119,7 @@ export class Admin implements OnInit {
 
     if (this.isEditMode) {
       // 🌟 ส่ง headers ไปด้วย
-      this.http.put(`http://localhost:3000/routes/${this.formData.id}`, payload, { headers }).subscribe({
+      this.http.put(`https://wu-bus-backend.onrender.com/routes/${this.formData.id}`, payload, { headers }).subscribe({
         next: () => {
           this.isSaving = false;
           this.closeModal();
@@ -133,7 +133,7 @@ export class Admin implements OnInit {
       });
     } else {
       // 🌟 ส่ง headers ไปด้วย
-      this.http.post('http://localhost:3000/routes', payload, { headers }).subscribe({
+      this.http.post('https://wu-bus-backend.onrender.com/routes', payload, { headers }).subscribe({
         next: () => {
           this.isSaving = false;
           this.closeModal();
@@ -155,7 +155,7 @@ export class Admin implements OnInit {
       const token = localStorage.getItem('adminToken');
       const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-      this.http.delete(`http://localhost:3000/routes/${id}`, { headers }).subscribe({
+      this.http.delete(`https://wu-bus-backend.onrender.com/routes/${id}`, { headers }).subscribe({
         next: () => this.fetchRoutes(),
         error: (err) => alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + (err.error?.message || err.statusText))
       });

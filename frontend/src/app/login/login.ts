@@ -31,7 +31,7 @@ export class Login {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.http.post('http://localhost:3000/auth/login', {
+    this.http.post('https://wu-bus-backend.onrender.com/auth/login', {
       username: this.username,
       password: this.password
     }).subscribe({

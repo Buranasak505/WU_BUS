@@ -37,7 +37,8 @@ export class RouteDetail implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
 
-    this.http.get(`http://localhost:3000/routes/${number}`).subscribe({
+    // เปลี่ยนลิงก์จุดที่ 1
+    this.http.get(`https://wu-bus-backend.onrender.com/routes/${number}`).subscribe({
       next: (data) => {
         this.routeData = data;
         this.isLoading = false;
@@ -57,7 +58,8 @@ export class RouteDetail implements OnInit, OnDestroy {
     this.sub = interval(15000)
       .pipe(
         startWith(0),
-        switchMap(() => this.http.get<any>(`http://localhost:3000/routes/${num}/live`))
+        // เปลี่ยนลิงก์จุดที่ 2
+        switchMap(() => this.http.get<any>(`https://wu-bus-backend.onrender.com/routes/${num}/live`))
       )
       .subscribe({
         next: (d) => {

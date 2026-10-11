@@ -69,4 +69,4 @@ app.post("/api/bus/:id/status", auth, (req, res) => {
   res.json(bus);
 });
 
-app.listen(3000, () => console.log("เปิดเว็บที่ http://localhost:3000"));
+app.listen(3000, () => console.log("เปิดเว็บที่ https://wu-bus-backend.onrender.com"));

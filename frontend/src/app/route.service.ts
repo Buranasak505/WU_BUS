@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class RouteService {
-  private apiUrl = 'http://localhost:3000/routes'; 
+  private apiUrl = 'https://wu-bus-backend.onrender.com/routes'; 
 
   constructor(private http: HttpClient) {}
 

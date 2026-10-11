@@ -17,7 +17,7 @@ export class Auth {
 
   login(username: string, password: string) {
     return this.http
-      .post<LoginResult>('http://localhost:3000/auth/login', { username, password })
+      .post<LoginResult>('https://wu-bus-backend.onrender.com/auth/login', { username, password })
       .pipe(
         tap((r) => {
           localStorage.setItem('token', r.token);
